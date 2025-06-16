@@ -1,0 +1,72 @@
+<html>
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv="pragma" content="no-cache"/>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name ="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+  <meta charset="utf-8"/>
+  <script src="https://survey.askgames.io/surveyApi.js"></script>
+<title>Mockup</title>
+</head>
+<body>
+<script type="text/javascript">
+	window.onload=function(){
+		var _uid="tester";
+		var _gid="jumper";
+		var last_event=null;
+		var urlParams=new URLSearchParams(window.location.search);
+		if (typeof urlParams.get("user_id")=="string")
+			_uid="vk_"+urlParams.get("user_id");
+		if (typeof urlParams.get("app_id")=="string")
+			_gid="vk_"+urlParams.get("app_id");
+		if (typeof urlParams.get("controls_type")=="string")
+			surveyMaster.surveyUrlParams.vk_controls_type=urlParams.get("controls_type");
+		if (typeof urlParams.get("test_mode")=="string")
+			surveyMaster.surveyUrlParams.test_mode=urlParams.get("test_mode");
+		if (typeof urlParams.get("isWebView")=="string")
+			surveyMaster.surveyUrlParams.isWebView=urlParams.get("isWebView");
+		surveyMaster.setUserId(_uid);
+		//surveyMaster.debugMode=true;
+		surveyMaster.init(_gid);
+		
+		surveyMaster.addCallback("onSuccess",function(unqualified) {
+			window.parent.postMessage({type:"VKWebAppOnSurveySuccess",data:{unqualified: unqualified}},"*");
+		});
+		surveyMaster.addCallback("onFail",function(data) {
+			window.parent.postMessage({type:"VKWebAppOnSurveyDecline",data:data},"*");
+		});
+		surveyMaster.addCallback("onLoadFail",function() {
+			window.parent.postMessage({type:"VKWebAppOnSurveyLoadFail",data:{}},"*");
+		});
+		surveyMaster.addCallback("onSurveyAvailable",function() {
+			window.parent.postMessage({type:"VKWebAppOnSurveyAvailable",data:{}},"*");
+		});
+		surveyMaster.addCallback("onSurveyUnavailable",function() {
+			window.parent.postMessage({type:"VKWebAppOnSurveyUnavailable",data:{}},"*");
+		});
+		surveyMaster.addCallback("onSurveyStart",function() {
+			window.parent.postMessage({type:"VKWebAppOnSurveyStart",data:{}},"*");
+		});
+		
+		window.addEventListener("message",function(event){
+			if (event.data.hasOwnProperty("call")) {
+				switch (event.data.call) {
+					case "VKWebAppShowSurvey":
+						surveyMaster.showSurvey();
+					break;
+					case "VKWebAppCheckSurvey":
+						surveyMaster.hasSurvey();
+					break;
+					default: break;
+				}
+				last_event=event.data.call;
+			}
+			if (event.data.hasOwnProperty("customData")) {
+				window.parent.postMessage({kykyCustomEvent:event.data.customData},"*");
+			}
+		});
+	};
+</script>
+</body>
+</html>

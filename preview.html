@@ -1,0 +1,92 @@
+<html>
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv="pragma" content="no-cache"/>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name ="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+  <meta charset="utf-8"/>
+  <script src="surveyApi.js"></script>
+<title>Preview</title>
+</head>
+<body style="background: transparent;">
+<input type="text" id="jsonInput" style="display: none";></input>
+<script type="text/javascript">
+	window.onload=function(){
+		var _uid="";
+		var _gid="";
+		var urlParams=new URLSearchParams(window.location.search);
+		if (typeof urlParams.get("uid")=="string")
+			_uid=urlParams.get("uid");
+		if (typeof urlParams.get("gid")=="string")
+			_gid=urlParams.get("gid");
+		surveyMaster.setUserId(_uid);
+		surveyMaster.debugMode=true;
+		surveyMaster.init(_gid);
+		surveyMaster.surveyURL="index.html";
+		
+		surveyMaster.addCallback("onSuccess",function(unqualified) {
+			
+		});
+		
+		surveyMaster.addCallback("onFail",function() {
+			
+		});
+		surveyMaster.addCallback("onLoadFail",function() {
+			
+		});
+		surveyMaster.addCallback("onSurveyAvailable",function() {
+			
+		});
+		surveyMaster.addCallback("onSurveyUnavailable",function() {
+			
+		});
+	};
+	window.addEventListener("message",(event) => {
+		try {console.log(event.data);
+			if (typeof event.data==="string")
+			{
+				if (event.data.includes("kykyshkaDebug"))
+				{
+					var _data=JSON.parse(event.data);
+					if (_data.hasOwnProperty("kykyshkaDebug"))
+					{
+						if (_data.kykyshkaDebug.hasOwnProperty("action"))
+						{
+							switch (_data.kykyshkaDebug.action)
+							{
+								case "grabBlock":
+									document.querySelector("iframe").contentWindow.postMessage({kykyshkaDebug:JSON.parse(document.getElementById("jsonInput").value)},"*");
+								break;
+								default:
+								break;
+							}
+						}
+					}
+				}
+			}
+			if (typeof event.data==="object")
+			{
+				if (event.data.hasOwnProperty("testBlock"))
+				{
+					document.getElementById("jsonInput").value=JSON.stringify({surveyKey:event.data.testBlock.id,block:event.data.testBlock});
+					console.log({surveyKey:event.data.testBlock.id,block:event.data.testBlock});
+					surveyMaster.showSurvey();
+					document.querySelector("iframe").src=surveyMaster.surveyURL+"?test=1";//"?data="+encodeURIComponent(utoa(_val));
+				}
+				if (event.data.hasOwnProperty("nextBlock"))
+				{
+					window.parent.postMessage({nextBlock: event.data.nextBlock});
+				}
+			}
+		}
+		catch(e) {console.log(e);
+			return;
+		}
+	}, false);
+	function utoa(data) {
+		return btoa(unescape(encodeURIComponent(data)));
+	}
+</script>
+</body>
+</html>
